@@ -5,7 +5,7 @@
 
   MODULE ModScbRun
   ! Contains subroutines responsible for making the SCB calculations
-
+    use ModUtilities, ONLY: CON_stop
     implicit none
 
     integer, save :: iteration

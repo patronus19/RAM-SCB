@@ -5,7 +5,7 @@
 
 MODULE ModRamBoundary
 ! Contains subroutines responsible for calculating the boundary flux for RAM
-
+  use ModUtilities, ONLY: CON_set_do_test
   use ModRamVariables, ONLY: FGEOS
 
   implicit none

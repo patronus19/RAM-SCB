@@ -4,7 +4,7 @@
 !============================================================================
 
 module ModRamSats
-
+  use ModUtilities, ONLY: CON_set_do_test, CON_stop
   use ModRamMain, ONLY: DP
 
   implicit none

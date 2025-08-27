@@ -6,7 +6,7 @@
 MODULE ModScbEuler
   ! Contains subroutines responsible for calculating the alpha (actually beta)
   ! and psi (actually alpha) Euler potentials
-  
+  use ModUtilities, ONLY: CON_stop  
   implicit none
   
   contains

@@ -4,7 +4,7 @@
 !============================================================================
 
 module ModRamIO
-
+  use ModUtilities, ONLY: CON_set_do_test, CON_stop
   implicit none
 
   logical :: IsFramework = .false. 

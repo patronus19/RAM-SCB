@@ -5,7 +5,7 @@
 
 module ModRamNCDF
 
-
+  use ModUtilities, ONLY: CON_stop
   implicit none
   
   contains

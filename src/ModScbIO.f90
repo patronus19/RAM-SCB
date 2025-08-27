@@ -4,7 +4,7 @@
 !============================================================================
 
 MODULE ModScbIO
-  
+  use ModUtilities, ONLY: CON_set_do_test, CON_stop 
   use nrtype, ONLY: DP
 
   implicit none

@@ -5,7 +5,7 @@
 
 Module ModRamScb
 ! Contains subroutines and functions necessary to couple RAM and SCB
-
+  use ModUtilities, ONLY: CON_stop
   use nrtype, ONLY: DP
 
   implicit none

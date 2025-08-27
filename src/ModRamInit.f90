@@ -6,6 +6,8 @@
 MODULE ModRamInit
 ! Contains subroutines for initialization of RAM
 
+  use ModUtilities, ONLY: CON_set_do_test, CON_stop
+  
   implicit none
 
   contains
@@ -13,6 +15,7 @@ MODULE ModRamInit
   subroutine ram_allocate
     ! Allocate arrays for variables used in RAM calculations
   
+ 
     use ModRamVariables ! Need to allocate and initialize all the variables
     use ModRamParams,    ONLY: IsComponent, FixedComposition
     use ModRamSpecies,   ONLY: RAMSpecies, nSpecies

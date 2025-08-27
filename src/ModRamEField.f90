@@ -5,7 +5,7 @@
 
 MODULE ModRamEField
 ! Contains subroutines related to getting the electric field for RAM
-
+  use ModUtilities, ONLY: CON_stop
   implicit none
 
   contains

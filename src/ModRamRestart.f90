@@ -4,7 +4,7 @@
 !============================================================================
 
 module ModRamRestart
-
+  use ModUtilities, ONLY: CON_set_do_test
   implicit none
   
   contains

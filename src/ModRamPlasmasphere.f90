@@ -1,6 +1,6 @@
 MODULE ModRamPlasmasphere
   use ModRamMain, ONLY: DP
-
+  use ModUtilities, ONLY: CON_stop
   implicit none
   real(DP), parameter :: MHP=1.67e-24, MOP=2.67e-23
   real(DP) :: R, DAY, HOUR

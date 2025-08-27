@@ -1,7 +1,7 @@
 MODULE ModSceIono
 
   use nrtype, ONLY: DP
-
+  use ModUtilities, ONLY: CON_stop
   implicit none
 
   real(DP), allocatable :: x(:), y(:), rhs(:), b(:), Bnd_I(:), d_I(:), e_I(:), &

@@ -5,7 +5,7 @@ module ModRamCouple
 !    Copyright (c) 2016, Los Alamos National Security, LLC
 !    All rights reserved.
 !==============================================================================
-
+  use ModUtilities, ONLY: CON_set_do_test, CON_stop
   use ModRamMain, ONLY: Real8_, PathRamOut
   use ModRamGrids, ONLY: NR, NE, NT, NPA, nRextend
   use ModRamTiming, ONLY: TimeRamElapsed, TimeRamNow

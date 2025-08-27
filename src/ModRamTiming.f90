@@ -5,7 +5,7 @@
 
 module ModRamTiming
 !    A module for tracking code efficiency and other timing metrics.
-
+  use ModUtilities, ONLY: CON_set_do_test, CON_stop
   use ModRamMain,   ONLY: DP, niter, PathRamOut
   use ModRamParams, ONLY: DoSaveRamSats
 

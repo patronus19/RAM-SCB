@@ -3,7 +3,7 @@
 !    All rights reserved.
 !==============================================================================
 subroutine IM_set_parameters
-
+  use ModUtilities, ONLY: CON_set_do_test, CON_stop
 !!!!! Module Variables
   use ModRamMain,    ONLY: PathRestartIn, nIter, DP
   use ModRamGrids,   ONLY: nS, NEL, NTL, NR, NT, NE, NPA, NameVar
