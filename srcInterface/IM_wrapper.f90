@@ -5,7 +5,7 @@ module IM_wrapper
 !******************************************************************************
   
   ! Wrapper for RAM_SCB when used in SWMF/IM component mode.
-
+  use ModUtilities, ONLY: CON_set_do_test, CON_stop
   implicit none
 
   private ! except
@@ -53,7 +53,7 @@ module IM_wrapper
     case('VERSION')
        call put(CompInfo,                         &
             Use=.true.,                           &
-            NameVersion='RAM-SCB (Jordanova, Zaharia, Engel)', &
+            NameVersion='RAM_SCB (Jordanova, Zaharia, Engel)', &
             Version=2.0)
        
     case('MPI')
@@ -562,7 +562,7 @@ module IM_wrapper
     use ModRamVariables, ONLY: PAllSum, HPAllSum, OPAllSum, PparSum, &
          NAllSum, HNAllSum, ONAllSum, BNES
     use ModRamTiming,    ONLY: TimeRamNow
-    use ModRamCouple,    ONLY: MhdDensPres_VII, DoMultiFluidGMCoupling
+    use ModRamCouple,    ONLY: MhdDensPres_VII
     use ModIoUnit,       ONLY: UNITTMP_
     use ModRamFunctions, ONLY: ram_sum_pressure
     implicit none
@@ -599,7 +599,6 @@ module IM_wrapper
     ! Initialize all values to -1; MHD will not couple negative values.
     Buffer_IIV=-1
     
-    DoMultiFluidGMCoupling = .false.
     DoAnisoPressureGMCoupling = .false.
 
     select case(NameVar)
@@ -620,13 +619,12 @@ module IM_wrapper
 
     case('p:rho:Hpp:Opp:Hprho:Oprho')
        call CON_stop(NameSub//' NameVar not currently supported: '//trim(NameVar))
-       DoMultiFluidGMCoupling = .true.
     case('p:rho:ppar:bmin')
        call CON_stop(NameSub//' NameVar not currently supported: '//trim(NameVar))
        DoAnisoPressureGMCoupling = .true.
     case default
        call CON_stop(NameSub//' invalid NameVar='//NameVar)
-    end if
+    end select
     
     if(DoTestMe)then
        write(*,*)'Maxvals of Buffer_IIV, PAllSum = '
@@ -803,15 +801,16 @@ module IM_wrapper
   end subroutine IM_run
   
   !=============================================================================
-  subroutine IM_put_from_gm_crcm(Integral_IIV, Kp, iSizeIn, jSizeIn, &
-       nIntegralIn, BufferLine_VI, nVarLine, nPointLine, NameVar, tSimulation)
+  subroutine IM_put_from_gm_crcm(Integral_IIV, Kp, Ae, iSizeIn, jSizeIn, &
+       nIntegralIn, BufferLine_VI, nVarLine, nPointLine, NameVar, &
+       BufferSolarWind_V, tSimulation)
 
     integer, intent(in) :: iSizeIn, jSizeIn, nIntegralIn
     real,    intent(in) :: Integral_IIV(iSizeIn,jSizeIn,nIntegralIn)
-    real,    intent(in) :: Kp
+    real,    intent(in) :: Kp, Ae
     integer, intent(in) :: nVarLine, nPointLine
     real,    intent(in) :: BufferLine_VI(nVarLine, nPointLine)
-    real,    intent(in) :: tSimulation
+    real,    intent(in) :: tSimulation, BufferSolarWind_V(8)
     character (len=*), intent(in) :: NameVar
 
     character (len=*), parameter :: NameSub='IM_put_from_gm_crcm'
