@@ -65,6 +65,7 @@ allclean:
 	@(if [ -d srcPspline ]; then rm -rf srcPspline; fi);
 	@cd ${srcDir}; make distclean
 	@cd srcInterface; make distclean
+	@cd srcExternal; make distclean
 	@cd ${GlowDir}; make distclean
 	# If util/share moved in component mode, place them back.
 	if [ -d component_util ]; then mv component_util util; fi
