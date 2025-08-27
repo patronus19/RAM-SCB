@@ -7,6 +7,8 @@ include ../Makefile.def
 include Makefile.DEPEND
 include Makefile.RULES
 
+RAMFLAGS = -fallow-argument-mismatch -fallow-invalid-boz
+
 # Name the executable and library target.
 EXE = ${BINDIR}/ram_scb.exe
 TEST = ${BINDIR}/unittest.exe
@@ -102,6 +104,21 @@ DEPEND:
 help: 
 	echo Help forthcoming.
 
+.f90.o:
+	${COMPILE.f90} ${Cflag3} ${RAMFLAGS} $<
+
+.F90.o:
+	${COMPILE.f90} -DsysLinux -DcompGFORTRAN ${Cflag3} $<
+
+.f.o:
+	${COMPILE.f77} ${Cflag3} ${RAMFLAGS} -ffixed-line-length-132 $<
+
+.for.o:
+	${COMPILE.f77} ${Cflag3} ${RAMFLAGS} -ffixed-line-length-132 $<
+
+.ftn.o:
+	${COMPILE.f77} ${Cflag3} ${RAMFLAGS} -ffixed-line-length-132 $<
+	
 # Rules for cleaning:
 clean:
 	rm -f *~ core *.o *.mod fort.* a.out *.exe *.a *.so *.protex
