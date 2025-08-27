@@ -7,10 +7,10 @@ srcDir = src
 GlowDir= srcGlow
 
 INSTALLFILES = ${srcDir}/Makefile.DEPEND \
-	       ${srcDir}/Makefile.RULES  \
-	       srcInterface/Makefile.DEPEND \
-	       srcExternal/Makefile.DEPEND \
-		${GlowDir}/Makefile.DEPEND
+	       	${srcDir}/Makefile.RULES     \
+	       	srcInterface/Makefile.DEPEND \
+	       	srcExternal/Makefile.DEPEND  \
+			${GlowDir}/Makefile.DEPEND
 help:
 	@echo ' '
 	@echo ' You can "make" the following:'
@@ -67,7 +67,7 @@ allclean:
 	@cd ${GlowDir}; make distclean
 	rm -f *~
 
-rundir: 
+rundir:
 	mkdir -p ${RUNDIR}/IM/output
 	cp input/RamIndices.txt ${RUNDIR}/
 	cp input/apf107.dat ${RUNDIR}/
@@ -96,7 +96,7 @@ rundir:
                 mv initialization.nc input_ram/;            \
 		mv QinDenton_20130317_1min.txt input_scb/;  \
 		mv NitrogenCrossSections.dat input_ram/; \
-		cp -r ${IMDIR}/input/glow_data input_sce/;	
+		cp -r ${IMDIR}/input/glow_data input_sce/;
 	@(if [ "$(STANDALONE)" != "NO" ]; then \
 		cd ${RUNDIR} ; \
 		cp ${IMDIR}/Param/PARAM.in.default ./PARAM.in; \
@@ -204,7 +204,7 @@ testTravis_check:
                ${TESTDIR4}/output_ram/sat1.nc
 	ncdump -v "Flux_H","B_xyz" ${TESTDIR4}/output_ram/sat1.nc     \
                | sed -e '1,/data:/d' >                                \
-               ${TESTDIR4}/output_ram/sat1.test        
+               ${TESTDIR4}/output_ram/sat1.test
 	${SCRIPTDIR}/DiffNum.pl -b -a=1e-9                            \
                 ${TESTDIR3}/output_ram/sat1.test                      \
                 ${TESTDIR4}/output_ram/sat1.test                      \
@@ -243,7 +243,7 @@ test1_check:
 	${SCRIPTDIR}/DiffNum.pl -b -a=1e-9	                        \
 		${TESTDIR1}/output_ram/pressure_d20130317_t001500.dat   \
 		${IMDIR}/output/test1/pressure.ref                      \
-		>> test1.diff			        
+		>> test1.diff
 	ncdump -v "Flux_H","B_xyz"                              	\
                ${TESTDIR1}/output_ram/sat1_d20130317_t000000.nc 	\
                | sed -e '1,/data:/d' >                          	\
@@ -290,7 +290,7 @@ test2_run:
 	rm PARAM.in; ln -s PARAM.in.test2.2nd PARAM.in; \
 	mv restartOUT/*.nc restartIN/restart.nc; \
 	mv restartOUT/*.txt restartIN/restart_info.txt; \
-	${MPIRUN} ./ram_scb.exe | tee runlog2;	
+	${MPIRUN} ./ram_scb.exe | tee runlog2;
 
 test2_check:
 	${SCRIPTDIR}/DiffNum.pl -b -a=1e-9	                      \
@@ -302,7 +302,7 @@ test2_check:
 	       ${TESTDIR2}/output_ram/sat1.nc
 	ncdump -v "Flux_H","B_xyz" ${TESTDIR2}/output_ram/sat1.nc     \
                | sed -e '1,/data:/d' >                                \
-               ${TESTDIR2}/output_ram/sat1.test        
+               ${TESTDIR2}/output_ram/sat1.test
 	${SCRIPTDIR}/DiffNum.pl -b -a=1e-9                            \
                 ${TESTDIR2}/output_ram/sat1.test                      \
                 ${IMDIR}/output/test1/sat1.ref                        \
@@ -347,7 +347,7 @@ test3_check:
 	${SCRIPTDIR}/DiffNum.pl -b -a=1e-9                             \
 		${TESTDIR3}/output_ram/pressure_d20130317_t001500.dat  \
 		${IMDIR}/output/test3/pressure.ref      	       \
-		> test3.diff                                           
+		> test3.diff
 	${SCRIPTDIR}/DiffNum.pl -b -a=1e-9			       \
 		${TESTDIR3}/output_scb/hI_output_d20130317_t001500.dat \
 		${IMDIR}/output/test3/hI.ref 		 	       \
@@ -382,7 +382,7 @@ test4_run:
 	rm PARAM.in; ln -s PARAM.in.test4.2nd PARAM.in;  \
 	mv restartOUT/*.nc restartIN/restart.nc; \
 	mv restartOUT/*.txt restartIN/restart_info.txt; \
-	${MPIRUN} ./ram_scb.exe | tee runlog2;      
+	${MPIRUN} ./ram_scb.exe | tee runlog2;
 
 test4_check:
 	${SCRIPTDIR}/DiffNum.pl -b -a=1e-9                            \
@@ -398,7 +398,7 @@ test4_check:
                ${TESTDIR4}/output_ram/sat1.nc
 	ncdump -v "Flux_H","B_xyz" ${TESTDIR4}/output_ram/sat1.nc     \
                | sed -e '1,/data:/d' >                                \
-               ${TESTDIR4}/output_ram/sat1.test        
+               ${TESTDIR4}/output_ram/sat1.test
 	${SCRIPTDIR}/DiffNum.pl -b -a=1e-9                            \
                 ${TESTDIR4}/output_ram/sat1.test                      \
                 ${IMDIR}/output/test3/sat1.ref                        \
