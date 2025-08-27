@@ -42,3 +42,4 @@ clean:
 
 distclean: clean
 	rm -f Makefile.DEPEND
+	rm -f mergelibs.mri
