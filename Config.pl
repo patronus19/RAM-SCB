@@ -13,7 +13,7 @@ use CPAN::Version;
 
 # Set identifier information; collect arguments.
 our $Component       = "IM";
-our $Code            = "RAM-SCB";
+our $Code            = "RAM_SCB";
 our $MakefileDefOrig = 'src/Makefile.def';
 our @Arguments       = @ARGV;
 my  $IsStandalone = 'True';
