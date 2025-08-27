@@ -7,10 +7,10 @@ srcDir = src
 GlowDir= srcGlow
 
 INSTALLFILES = ${srcDir}/Makefile.DEPEND \
-	       ${srcDir}/Makefile.RULES  \
-	       srcInterface/Makefile.DEPEND \
-	       srcExternal/Makefile.DEPEND \
-		${GlowDir}/Makefile.DEPEND
+	       	${srcDir}/Makefile.RULES     \
+	       	srcInterface/Makefile.DEPEND \
+	       	srcExternal/Makefile.DEPEND  \
+			${GlowDir}/Makefile.DEPEND
 help:
 	@echo ' '
 	@echo ' You can "make" the following:'
