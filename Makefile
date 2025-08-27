@@ -41,10 +41,11 @@ install:
 
 
 LIB:
+	cd srcExternal;  make LIB
+	cd ${GlowDir};   make LIB
 	cd ${srcDir};    make LIB
 	cd srcInterface; make LIB
-	cd srcExternal;  make LIB
-	cd ${GlowDir}; make LIB
+
 
 clean:
 	@touch ${INSTALLFILES}
