@@ -4,6 +4,8 @@ include ../Makefile.def
 include ../Makefile.conf
 include Makefile.DEPEND
 
+RAMFLAGS = -fallow-argument-mismatch -fallow-invalid-boz
+
 OBJECTS = \
 	planeweim.o       \
 	gaussian_filter.o \
@@ -40,6 +42,22 @@ LIB: DEPEND
 
 ${MY_LIB}: ${OBJECTS} ${MAKEFILE_COMP_SELECT}
 	${AR} ${MY_LIB} ${OBJECTS}
+	
+.f90.o:
+	${COMPILE.f90} ${Cflag3} ${RAMFLAGS} $<
+
+.F90.o:
+	${COMPILE.f90} -DsysLinux -DcompGFORTRAN ${Cflag3} $<
+
+.f.o:
+	${COMPILE.f77} ${Cflag3} ${RAMFLAGS} -ffixed-line-length-132 $<
+
+.for.o:
+	${COMPILE.f77} ${Cflag3} ${RAMFLAGS} -ffixed-line-length-132 $<
+
+.ftn.o:
+	${COMPILE.f77} ${Cflag3} ${RAMFLAGS} -ffixed-line-length-132 $<
+	
 
 clean:
 	rm -f *.o
