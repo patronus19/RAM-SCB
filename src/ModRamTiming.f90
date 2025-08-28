@@ -110,7 +110,7 @@ module ModRamTiming
     Efficiency = (TimeRamElapsed-TimeRestart)/SysTimeNow
 
     if (DoWriteEffFile.and.(abs(mod(TimeRamElapsed, dtEffFile)).le.1e-9)) then
-       open(UNITTMP_,FILE=NameEffFile,ACCESS='APPEND')
+       open(UNITTMP_, FILE=NameEffFile, ACCESS='APPEND')
        write(UNITTMP_, '(2(f12.2, 1x), f12.8)') SysTimeNow, TimeRamElapsed, Efficiency
        close(UNITTMP_)
     endif
