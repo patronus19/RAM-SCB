@@ -96,9 +96,8 @@ foreach(@Arguments){
 &show_settings if $Show;
 
 # SHARE/UTIL FOR COMPONENT MODE:
-print "RAM: Install = $Install and IsStandAlone = $IsStandalone\n";
 if($Install and $IsStandalone eq 'False'){
-    print 'RAM-SCB: Switching to SWMF-based share & util.';
+    print "RAM-SCB: Switching to SWMF-based share & util.\n";
     move('share', 'component_share');
 	move('util',  'component_util');
 }
@@ -126,6 +125,7 @@ if($DoSetLibs){
     } else {
         $libs{'gsl'}=$ENV{GSLDIR} unless exists $libs{'gsl'};
     }
+    print "RAM-SCB: AutoGSL=$DoAutoGSL and AutoNCF=$DoAutoNCF\n";
     &set_libs;
 }
 
@@ -183,7 +183,11 @@ sub set_libs
     $MakefileConfEdit = '../../Makefile.conf' if($IsStandalone eq 'False');
     $MakefileDefEdit  = '../../Makefile.def'  if($IsStandalone eq 'False');
 
-    print "\nEditing $MakefileConfEdit\n";
+    print "\nRAM-SCB: Editing $MakefileConfEdit\n";
+    # Debug print outs as needed:
+    # print "This line added to CFLAG: $extra_flags\n";
+    # print "This line added to Lfag1: $lib_cmd and $add_flg\n";
+    # print "This line added to Lflag2: $add_flg\n";
 
     # Open Makefile.conf, insert libflags before Lflag1.
     @ARGV = ($MakefileConfEdit);
@@ -191,8 +195,12 @@ sub set_libs
 	die "ERROR: Library locations are already set.  Reinstall code first\n"
 	    if(/^\s*LibFlags/);
 	s/^(\s*CFLAG\s*=.*)\n/$1$extra_flags\n/;
+    # Stand-alone flags to edit:
 	s/^(\s*Lflag1\s*=.*)\n/$lib_cmd\n$1$add_flg\n/;
 	s/^(\s*Lflag2\s*=.*)\n/$1$add_flg\n/;
+    # Component mode flags to edit:
+    s/^(\s*Lflag\s*=.*)\n/$lib_cmd\n$1$add_flg\n/;
+	s/^(\s*LflagMpi\s*=.*)\n/$1$add_flg\n/;
 	print;
     }
 
