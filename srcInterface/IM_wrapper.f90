@@ -560,26 +560,29 @@ module IM_wrapper
     use ModRamParams,    ONLY: DoAnisoPressureGMCoupling
     use ModRamGrids,     ONLY: nR, nT, nRextend
     use ModRamVariables, ONLY: PAllSum, HPAllSum, OPAllSum, PparSum, &
-         NAllSum, HNAllSum, ONAllSum, BNES
+         NAllSum, HNAllSum, ONAllSum, BNES, ePAllSum
     use ModRamTiming,    ONLY: TimeRamNow
     use ModRamCouple,    ONLY: MhdDensPres_VII
     use ModIoUnit,       ONLY: UNITTMP_
     use ModRamFunctions, ONLY: ram_sum_pressure
     implicit none
 
-    character (len=*),parameter :: NameSub='IM_get_for_gm'
-
     integer, intent(in)                                :: iSizeIn,jSizeIn,nVar
     real, dimension(iSizeIn,jSizeIn,nVar), intent(out) :: Buffer_IIV
     character (len=*),intent(in)                       :: NameVar
 
     logical, save     :: IsFirstCall = .true.
-    logical :: DoTest, DoTestMe
+
     real(kind=Real8_) :: cEnerToPa = 1.6E-10 ! KeV/cm3 to Pascals
     integer :: i, iT, iRot
-    integer, parameter :: pres_=1, dens_=2, parpres_=3, bmin_=4,&
-         Hpres_=3, Opres_=4, Hdens_=5, Odens_=6
+    ! Variable indexes: this needs to be updated to match modern
+    ! variable matching used in, e.g., CIMI, RCM.
+    integer, parameter :: epres_=1, dens_=2, pres_=3, &
+                          parpres_=4, bmin_=5,&
+                          Hpres_=4, Opres_=5, Hdens_=6, Odens_=7
 
+    character (len=*),parameter :: NameSub='IM_get_for_gm'
+    logical :: DoTest, DoTestMe
     !--------------------------------------------------------------------------
     call CON_set_do_test(NameSub, DoTest, DoTestMe)
 
@@ -587,6 +590,13 @@ module IM_wrapper
     ! radial extent of SCB.  The radial extent of RAM is nR which is <nRextend.
     ! We fill pressure values up to nR and leave the outer cells as negative
     ! values.  BATS will not couple negative values.
+
+    if(DoTest)then
+      write(*,*) 'IM:', NameSub
+      write(*,*) 'IM: nVar = ', nVar
+      write(*,*) 'IM: iSizeIn, jSizeIn = ', iSizeIn, jSizeIn
+      write(*,*) 'IM: NameVar = ', NameVar
+    end if
 
     ! Check to ensure that what we get is what GM wants.
     ! Include RAM's ghost cells for continuity with incoming coupling.
@@ -602,20 +612,24 @@ module IM_wrapper
     DoAnisoPressureGMCoupling = .false.
 
     select case(NameVar)
-    case('p:rho')
+    case('pe:p:rho')
        ! Sum pressure:
        call ram_sum_pressure()
 
        ! Fill pressure from computational cells; rotate 180.
        do iT=1, nT
           iRot = mod(iT+((nT-1)/2-1),nT-1) + 1 ! Even # of cells, 1 ghost cell.
-          Buffer_IIV(1:nR,iRot,pres_) = PAllSum(1:nR,iT)
-          Buffer_IIV(1:nR,iRot,dens_) = NAllSum(1:nR,iT)
+          Buffer_IIV(1:nR,iRot,pres_)  = PAllSum(1:nR,iT)
+          Buffer_IIV(1:nR,iRot,dens_)  = NAllSum(1:nR,iT)
+          Buffer_IIV(1:nR,iRot,epres_) = ePAllSum(1:nR,iT)
        end do
-       Buffer_IIV(1:nR,nT,pres_) = Buffer_IIV(1:nR,1,pres_)
-       Buffer_IIV(1:nR,nT,dens_) = Buffer_IIV(1:nR,1,dens_)
-       Buffer_IIV(:,:,pres_) = Buffer_IIV(:,:,pres_)*cEnerToPa
-       Buffer_IIV(nR+1:nRextend,:,pres_) = -1
+       Buffer_IIV(1:nR,nT,pres_)  = Buffer_IIV(1:nR,1,pres_)
+       Buffer_IIV(1:nR,nT,dens_)  = Buffer_IIV(1:nR,1,dens_)
+       Buffer_IIV(1:nR,nT,epres_) = Buffer_IIV(1:nR,1,epres_)
+       Buffer_IIV(:,:,pres_)  = Buffer_IIV(:,:,pres_)*cEnerToPa
+       Buffer_IIV(:,:,epres_) = Buffer_IIV(:,:,epres_)*cEnerToPa
+       Buffer_IIV(nR+1:nRextend,:,pres_)  = -1
+       Buffer_IIV(nR+1:nRextend,:,epres_) = -1
 
     case('p:rho:Hpp:Opp:Hprho:Oprho')
        call CON_stop(NameSub//' NameVar not currently supported: '//trim(NameVar))
