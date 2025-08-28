@@ -3,6 +3,9 @@ situation where RAM-SCB is a single component to the
 Space Weather Modeling Framework.  Results of this run
 should be nearly identical to stand-alone Test 1.
 
+#COMPONENTMAP
+IM  0   0   1
+
 #ECHO
 T
 
