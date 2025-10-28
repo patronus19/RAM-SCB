@@ -623,11 +623,14 @@ module IM_wrapper
           Buffer_IIV(1:nR,iRot,dens_)  = NAllSum(1:nR,iT)
           Buffer_IIV(1:nR,iRot,epres_) = ePAllSum(1:nR,iT)
        end do
+       ! Ensure azimuthal continuity.
        Buffer_IIV(1:nR,nT,pres_)  = Buffer_IIV(1:nR,1,pres_)
        Buffer_IIV(1:nR,nT,dens_)  = Buffer_IIV(1:nR,1,dens_)
        Buffer_IIV(1:nR,nT,epres_) = Buffer_IIV(1:nR,1,epres_)
+       ! Convert from energy density to Pascals
        Buffer_IIV(:,:,pres_)  = Buffer_IIV(:,:,pres_)*cEnerToPa
        Buffer_IIV(:,:,epres_) = Buffer_IIV(:,:,epres_)*cEnerToPa
+       ! Tell BATS to ignore ghost cells using negative values.
        Buffer_IIV(nR+1:nRextend,:,pres_)  = -1
        Buffer_IIV(nR+1:nRextend,:,epres_) = -1
 
@@ -640,10 +643,11 @@ module IM_wrapper
        call CON_stop(NameSub//' invalid NameVar='//NameVar)
     end select
 
-    if(DoTestMe)then
+    if(DoTest)then
        write(*,*)'Maxvals of Buffer_IIV, PAllSum = '
        do i=1, nR
-          write(*,*) maxval(Buffer_IIV(i,:,1)), maxval(PAllSum(i, :)*cEnerToPa)
+          write(*,*) maxval(Buffer_IIV(i,:,pres_)), &
+                     maxval(PAllSum(i, :)*cEnerToPa)
        end do
     end if
 
