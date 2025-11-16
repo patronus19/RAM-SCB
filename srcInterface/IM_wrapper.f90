@@ -577,7 +577,7 @@ module IM_wrapper
     integer :: i, iT, iRot
     ! Variable indexes: this needs to be updated to match modern
     ! variable matching used in, e.g., CIMI, RCM.
-    integer, parameter :: epres_=1, dens_=2, pres_=3, &
+    integer, parameter :: epres_=1, pres_=2, dens_=3, &
                           parpres_=4, bmin_=5,&
                           Hpres_=4, Opres_=5, Hdens_=6, Odens_=7
 
@@ -596,6 +596,7 @@ module IM_wrapper
       write(*,*) 'IM: nVar = ', nVar
       write(*,*) 'IM: iSizeIn, jSizeIn = ', iSizeIn, jSizeIn
       write(*,*) 'IM: NameVar = ', NameVar
+      write(*,*) 'IM: pres_, dens_, epres_ indexes = ', pres_, dens_, epres_
     end if
 
     ! Check to ensure that what we get is what GM wants.
