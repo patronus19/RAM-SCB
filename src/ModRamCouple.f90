@@ -45,7 +45,7 @@ module ModRamCouple
   ! Variables for E-field coupling with MHD (E=UxB):
   ! Only need equatorial values.
   real(kind=Real8_), public, allocatable :: ETotal_DII(:,:,:)
-  
+
   ! Variables for B-field coupling with MHD:
   ! Tracing info is stored in MhdLines_IIV(nLines, nPointsMax, nVarLine).
   ! Lines progress from 1 to nLines such that a line passing through radius
@@ -73,7 +73,7 @@ module ModRamCouple
   ! Corresponding logical variable denotes if line is close (.true.) or open (.false.).
   real(kind=Real8_), public, allocatable :: Blines_DIII(:,:,:,:)
   logical,           public, allocatable :: IsClosed_II(:,:)
-  
+
   ! Variables for coupling to SWMF-IE component:
   integer, public :: nIePhi=0, nIeTheta=0
   real(kind=Real8_), public, allocatable :: SwmfIonoPot_II(:,:)
@@ -115,14 +115,14 @@ contains
     uEqSWMF_DII = 0.
     bEqSWMF_DII = 0.
     IsClosed_II  = .true.
-    
+
   end subroutine RAMCouple_Allocate
 
 !==============================================================================
   subroutine RAMCouple_Deallocate
 
     implicit none
-    
+
     ! Items that may not have been allocated:
     if(allocated(MHDLines_IIV)) deallocate(MHDLines_IIV)
 
@@ -134,11 +134,11 @@ contains
 
   !===========================================================================
   subroutine set_type_mhd(NameVarIn, nVarIn)
-    ! Parse NameVar to determine if the info from the MHD code 
-    ! is single/ multispecies or multifluid.  Check for H, He, 
-    ! and O+ in simulation if multi.  If those cannot be found, 
+    ! Parse NameVar to determine if the info from the MHD code
+    ! is single/ multispecies or multifluid.  Check for H, He,
+    ! and O+ in simulation if multi.  If those cannot be found,
     ! revert to single species.
-    
+
 
     implicit none
 
@@ -197,7 +197,7 @@ contains
        case('Uy')
           Uy_=i
        case('Uz')
-          Uz_=i  
+          Uz_=i
        case('Bx')
           Bx_=i
        case('By')
@@ -233,7 +233,7 @@ contains
     ! Sort MHD field lines & associated state variables into manageable array.
     ! Extend field lines in preparation for calculation of Euler potential
     ! surfaces.  Create equatorial variables.
-   
+
     use ModRamConst, ONLY: b0dip
     use ModRamFunctions,ONLY: get_dipole_trace
 
@@ -282,11 +282,11 @@ contains
           if (iPointBuff == nPointIn) exit
           ! Do not exceeed max points
           if (iPointLine == nPointsMax) exit
-          ! Continue along line: 
+          ! Continue along line:
           iPointBuff = iPointBuff + 1
           iPointLine = iPointLine + 1
        end do
-       
+
        ! Check for very long lines or open lines.
        if (iPointLine>nPointsMax-5) then
           write(*,*) NameSub, ' ERROR: nPointsMax exceeded.'
@@ -315,7 +315,7 @@ contains
           yRam = GridExtend(iRad)*sin(phi(iLon))
           if (sqrt(xRam**2 + yRam**2) > 3.0) then
              iEnd(iLine) = 0
-          else 
+          else
              MhdLines_IIV(iLine,1,3) = xRam
              MhdLines_IIV(iLine,1,4) = yRam
              MhdLines_IIV(iLine,1,5) = 0.0
@@ -327,7 +327,7 @@ contains
                                     MhdLines_IIV(iLine,2:nPoints,By_), &
                                     MhdLines_IIV(iLine,2:nPoints,Bz_))
              ! Southern hemisphere?  Use simple symmetry.
-             if (mod(iLine, 2) == 0) then 
+             if (mod(iLine, 2) == 0) then
                 MhdLines_IIV(iLine,:,5)   = -1.0*MhdLines_IIV(iLine,:,5)
                 MhdLines_IIV(iLine,:,Bx_) = -1.0*MhdLines_IIV(iLine,:,Bx_)
                 MhdLines_IIV(iLine,:,By_) = -1.0*MhdLines_IIV(iLine,:,By_)
@@ -383,13 +383,13 @@ contains
     ! This section is for debug file writing and is not currently leveraged by
     ! SCB.  In the future, this section should be checked as indices do not
     ! line up correctly.
-    
+
     ! Save equatorial values.  EqSWMF values are written to SCB output for
     ! later reference but not used in calculation.
     do j=1, nT-1
        do i=1, nRextend
           ! Find corresponding trace.
-          iLine = 2*((nRextend)*(j-1) + i)-1 
+          iLine = 2*((nRextend)*(j-1) + i)-1
           ! Collect scalar equatorial values (iLine, 1st trace point, variable):
           xEqSWMF(i,j) = MhdLines_IIV(iLine,1,3)
           yEqSWMF(i,j) = MhdLines_IIV(iLine,1,4)
@@ -408,7 +408,7 @@ contains
     !
     !ETotal_DII(2,:,1:nT-1) = uEqSWMF_DII(1,2:iRad,:)*bEqSWMF_DII(3,2:iRad,:) &
     !     -uEqSWMF_DII(3,2:iRad,:)*bEqSWMF_DII(1,2:iRad,:) ! Y-component
-    
+
   end subroutine sort_mhd_lines
   !===========================================================================
   subroutine generate_flux
@@ -429,6 +429,7 @@ contains
     real(kind=Real8_) :: factor1, kappa, gamma1, gamma2, gamma3
     integer :: iS, iT, iE, iPa
     character(len=100) :: NameFile
+    character(len=21)  :: StrFmt
 
     ! Test Variables:
     logical :: DoTest, DoTestMe
@@ -437,7 +438,7 @@ contains
     call CON_set_do_test(NameSub, DoTest, DoTestMe)
 
     ! Convert mass density and pressure into number density and temp (ev).
-    ! Separate species depending on type of simulation.    
+    ! Separate species depending on type of simulation.
     select case(TypeMhd)
     case('single')
        if (DoTestMe) then
@@ -476,9 +477,40 @@ contains
        call CON_stop(NameSub//' TypeMhd not recognized: '//TypeMhd)
     end select
 
+    ! Write boundary dens and pressure to file.
+    if(mod(TimeRamElapsed, 60.0_Real8_) .eq. 0.0) then
+      ! Build file name using current time:
+       write(NameFile,'(a,i6.6,a)')&
+            PathRamOut//"bound_plasma_t",nint(TimeRamElapsed/60._Real8_),".out"
+       open( UnitTmp_, FILE=NameFile, STATUS='replace')
+       ! Write current time
+       write(UnitTmp_,'(es13.5,i5,5i3)') &
+            TimeRamElapsed, &
+            TimeRamNow%iYear, TimeRamNow%iMonth, TimeRamNow%iDay, &
+            TimeRamNow%iHour, TimeRamNow%iMinute, TimeRamNow%iSecond
+
+       ! Write units and header information:
+       write(UnitTmp_, *) 'Units are Hours, cm-3, and eV'
+       if (TypeMhd .eq. 'mult3F') then
+          write(UnitTmp_, *) 'lt Rho RhoH RhoSw RhoO p pH pSw pO'
+       elseif(TypeMhd .eq. 'anisoP')then
+          write(UnitTmp_, *) 'lt Rho RhoH RhoHe RhoO p pH pHe pO pparE pparH pparHe pparO'
+       else
+          write(UnitTmp_, *) 'lt Rho RhoH RhoHe RhoO Rhoe p pH pHe pO pe'
+       endif
+
+       ! Write data to file.
+       write(StrFmt, '(a, i2.2, a)') '(i2.2, ', 2*(nS+1), '(1x, E13.6))'
+       do iT=1, nT
+            write(UnitTmp_, StrFmt) &
+                  iT, MhdDensPres_VII(1,iT,0:nS), MhdDensPres_VII(2,iT,0:nS)
+       end do
+       close(UnitTmp_)
+    end if
+
     kappa = 3.
-    gamma1 = 6.0    !gamma(kappa+1)  
-    gamma2 = 1.3293 !gamma(kappa-0.5)  
+    gamma1 = 6.0    !gamma(kappa+1)
+    gamma2 = 1.3293 !gamma(kappa-0.5)
     gamma3 = 0.886  ! gamma(1.5)
     factor1 = gamma1/gamma2/gamma3*sqrt(2*cPi)/(2*kappa-3)**1.5
 
@@ -512,7 +544,7 @@ contains
                    if (MhdDensPres_VII(1,iT,0) < 0) then
                       FluxBats_IIS(iE,iT,iS) = 0.0
                    endif
-                enddo               
+                enddo
              else
                 call CON_stop(NameSub//' NameDistribution not recognized: '//NameDistrib)
              end if ! NameDistrib if
@@ -527,12 +559,12 @@ contains
           end select ! TypeMhd select
        end do ! nT Loop
     end do ! nE Loop
-    
+
     ! Remove ridiculously small values.
     where(FluxBats_IIS .lt. 1.0E-30) FluxBats_IIS = 0.0
 
     if(DoTestMe)call write_FluxGM
-    
+
     ! With the flux array stored in the module, coupling is complete.
 
   end subroutine generate_flux
@@ -543,7 +575,7 @@ contains
     use ModIoUnit,      ONLY: UnitTmp_
 
     implicit none
-    
+
     integer :: iS, iT, nFile, iPa
     character(len=100) :: NameFile
     character(len=35)  :: StringFormat
@@ -556,7 +588,7 @@ contains
        write(NameFile,'(a,i4.4,a,i1.1,a)')  &
             PathRamOut//"sep_05_",nFile,"_",iS,".swf"
        open(UnitTmp_, FILE=NameFile, STATUS='replace')
-       
+
        write(UnitTmp_, *) &
             'Flux file for TimeRam, iSpecies = ', TimeRamElapsed, iS
        do iT=1, nT
@@ -570,9 +602,9 @@ contains
   !===========================================================================
   function divMaxwellian(eMin, eMax, Dens, Temp)
     ! Enter start and stop of energy window (in eV), total density of plasma,
-    ! and total plasma temperature (again, in eV) to receive new density based 
+    ! and total plasma temperature (again, in eV) to receive new density based
     ! on energy window for a Maxwellian particle distribution.
-    
+
     use ModConst,   ONLY: cPi
 
     implicit none
@@ -588,7 +620,7 @@ contains
     ! Set starting and delta energy.
     energy = eMin
     dE = (eMax - eMin) / 1000.0
- 
+
     ! Do Riemann sum of Maxwellian distribution for
     ! given energy window.
     divMaxwellian = 0.0
@@ -598,7 +630,7 @@ contains
        factor1 = (-1 * energy) / Temp
        if (factor1 .lt. -750.0) then
           factor1 = 0.0
-       else 
+       else
           factor1 = exp(factor1)
        end if
 
@@ -609,7 +641,7 @@ contains
        divMaxwellian = divMaxwellian + dens * factor1 * factor2 * dE
 
        energy = energy + dE
-       
+
     end do
 
     return
