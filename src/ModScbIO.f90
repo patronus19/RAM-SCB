@@ -1167,4 +1167,112 @@ END SUBROUTINE Write_ionospheric_potential
     return
 
   end subroutine write_scb_pressure
+  
+!==================================================================================================
+SUBROUTINE Write_SCB_MagField_NC
+
+  use ModRamTiming,    ONLY: TimeRamNow
+  use ModScbMain,      ONLY: prefixOut
+  use ModScbGrids,     ONLY: nthe, npsi, nzeta
+  use ModScbVariables, ONLY: x, y, z, Bx, By, Bz, bf, bnormal, jacobian, &
+                             chiVal, psiVal, alphaVal
+  use ModRamFunctions, ONLY: RamFileName
+  use netcdf
+  use nrtype, ONLY: DP
+
+  implicit none
+
+  integer :: ncid
+  integer :: chiid, alphaid, betaid
+  integer :: chivarid, alphavarid, betavarid
+  integer :: xid, yid, zid, bxid, byid, bzid, bmagid, jacid
+  integer :: start3d(3), count3d(3)
+  character(len=500) :: fileName
+
+  start3d = (/1, 1, 1/)
+  count3d = (/nthe, npsi, nzeta/)
+
+  fileName = trim(prefixOut)//RamFileName('mag_field','nc',TimeRamNow)
+
+  call check(nf90_create(fileName, nf90_clobber, ncid))
+
+  call check(nf90_def_dim(ncid, 'chi',   nthe,  chiid))
+  call check(nf90_def_dim(ncid, 'alpha', npsi,  alphaid))
+  call check(nf90_def_dim(ncid, 'beta',  nzeta, betaid))
+
+  call check(nf90_def_var(ncid, 'chi',   nf90_double, chiid,   chivarid))
+  call check(nf90_def_var(ncid, 'alpha', nf90_double, alphaid, alphavarid))
+  call check(nf90_def_var(ncid, 'beta',  nf90_double, betaid,  betavarid))
+
+  call check(nf90_def_var(ncid, 'x', nf90_double, (/chiid,alphaid,betaid/), xid))
+  call check(nf90_def_var(ncid, 'y', nf90_double, (/chiid,alphaid,betaid/), yid))
+  call check(nf90_def_var(ncid, 'z', nf90_double, (/chiid,alphaid,betaid/), zid))
+
+  call check(nf90_def_var(ncid, 'Bx',   nf90_double, (/chiid,alphaid,betaid/), bxid))
+  call check(nf90_def_var(ncid, 'By',   nf90_double, (/chiid,alphaid,betaid/), byid))
+  call check(nf90_def_var(ncid, 'Bz',   nf90_double, (/chiid,alphaid,betaid/), bzid))
+  call check(nf90_def_var(ncid, 'Bmag', nf90_double, (/chiid,alphaid,betaid/), bmagid))
+
+  call check(nf90_def_var(ncid, 'jacobian', nf90_double, (/chiid,alphaid,betaid/), jacid))
+
+  call check(nf90_put_att(ncid, chivarid,   'title', 'Coordinate along SCB field line'))
+  call check(nf90_put_att(ncid, alphavarid, 'title', 'Magnetic flux-like Euler potential'))
+  call check(nf90_put_att(ncid, betavarid,  'title', 'Azimuthal angle-like Euler potential'))
+
+  call check(nf90_put_att(ncid, xid, 'units', 'RE'))
+  call check(nf90_put_att(ncid, yid, 'units', 'RE'))
+  call check(nf90_put_att(ncid, zid, 'units', 'RE'))
+
+  call check(nf90_put_att(ncid, bxid,   'units', 'nT'))
+  call check(nf90_put_att(ncid, byid,   'units', 'nT'))
+  call check(nf90_put_att(ncid, bzid,   'units', 'nT'))
+  call check(nf90_put_att(ncid, bmagid, 'units', 'nT'))
+
+  call check(nf90_put_att(ncid, xid,    'title', 'SCB x coordinate'))
+  call check(nf90_put_att(ncid, yid,    'title', 'SCB y coordinate'))
+  call check(nf90_put_att(ncid, zid,    'title', 'SCB z coordinate'))
+  call check(nf90_put_att(ncid, bxid,   'title', 'SCB Bx magnetic field component'))
+  call check(nf90_put_att(ncid, byid,   'title', 'SCB By magnetic field component'))
+  call check(nf90_put_att(ncid, bzid,   'title', 'SCB Bz magnetic field component'))
+  call check(nf90_put_att(ncid, bmagid, 'title', 'SCB magnetic field magnitude'))
+  call check(nf90_put_att(ncid, jacid,  'title', 'SCB grid Jacobian'))
+
+  call check(nf90_enddef(ncid))
+
+  call check(nf90_put_var(ncid, chivarid,   chiVal(1:nthe)))
+  call check(nf90_put_var(ncid, alphavarid, psiVal(1:npsi)))
+  call check(nf90_put_var(ncid, betavarid,  alphaVal(1:nzeta)))
+
+  call check(nf90_put_var(ncid, xid, x(1:nthe,1:npsi,1:nzeta), start3d, count3d))
+  call check(nf90_put_var(ncid, yid, y(1:nthe,1:npsi,1:nzeta), start3d, count3d))
+  call check(nf90_put_var(ncid, zid, z(1:nthe,1:npsi,1:nzeta), start3d, count3d))
+
+  call check(nf90_put_var(ncid, bxid,   Bx(1:nthe,1:npsi,1:nzeta)*bnormal, start3d, count3d))
+  call check(nf90_put_var(ncid, byid,   By(1:nthe,1:npsi,1:nzeta)*bnormal, start3d, count3d))
+  call check(nf90_put_var(ncid, bzid,   Bz(1:nthe,1:npsi,1:nzeta)*bnormal, start3d, count3d))
+  call check(nf90_put_var(ncid, bmagid, bf(1:nthe,1:npsi,1:nzeta)*bnormal, start3d, count3d))
+
+  call check(nf90_put_var(ncid, jacid, jacobian(1:nthe,1:npsi,1:nzeta), start3d, count3d))
+
+  call check(nf90_close(ncid))
+
+  print *, 'Wrote SCB magnetic field file: ', trim(fileName)
+
+  return
+
+CONTAINS
+
+  SUBROUTINE check(status)
+    integer, intent(in) :: status
+
+    if (status /= nf90_noerr) then
+       print *, 'NetCDF error in Write_SCB_MagField_NC:'
+       print *, trim(nf90_strerror(status))
+       stop 2
+    endif
+
+  END SUBROUTINE check
+
+END SUBROUTINE Write_SCB_MagField_NC
+  
 END MODULE ModScbIO
