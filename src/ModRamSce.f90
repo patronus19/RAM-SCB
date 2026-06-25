@@ -28,7 +28,8 @@ MODULE ModRamSce
     use nrtype, ONLY: cElectronMass, cElectronCharge, pi_d, pio2_d, cRadtoDeg
 
     implicit none
-
+    
+    character(len=2) :: st   !SPR added 
     integer, intent(in)  :: IS, nTheta, nPhi
     real(DP), intent(in) :: rIono
 
@@ -50,7 +51,7 @@ MODULE ModRamSce
                              num_flux_iono(:,:), ave_e_iono(:,:), NeEq(:,:), PParEEq(:,:), &
                              PPerEEq(:,:), dis_num_flux_iono(:,:), dis_ave_e_iono(:,:), &
                              dis_energy_flux_iono(:,:), ave_fluxEq(:,:,:), xTemp(:,:), &
-                             yTemp(:,:)
+                             yTemp(:,:),XNE_EQ(:,:),Lpp(:), Lpp_colat(:), Lpp_lon(:)    !SPR added
 
     real(DP), allocatable :: ave_fluxtmp(:,:), ave_fluxEQtmp(:,:), energy_fluxtmp(:,:), &
                              ave_etmp(:,:), num_fluxtmp(:,:), jr_tmp(:,:), &
@@ -123,6 +124,12 @@ MODULE ModRamSce
           end do
        end do
     end do
+    
+    	
+    if (IS.eq.1) st = 'h_'   !SPR added
+    if (IS.eq.2) st = 'he'
+    if (IS.eq.3) st = 'o_'
+    if (IS.eq.4) st = 'e_'
 
     ! Interpolate from RAM -> SCB
     ! RAM grid + extension
@@ -221,7 +228,7 @@ MODULE ModRamSce
     !  -- precip_flux(90deg) = ave_flux(at edge of the loss cone)
     !  -- isotropic now across the 200km atm. plane (same at r0Start, along B line)
     !  -- convert to the flux perpendicular to thep plane: flux*cos(alpha). 
-    !  -- integrate over solid anle (--> *pi) and energy (--> energy flux)
+    !  -- integrate over solid angle (--> *pi) and energy (--> energy flux)
     !/
     do i=1, npsi
        do j=2, nzeta
@@ -252,13 +259,16 @@ MODULE ModRamSce
        end do
     end do
 
+
+    DoTest = .true.    !SPR added
     ! writing to files
     if (DoTest)then
-       if (Mod(int(TimeRamElapsed) ,1800) .eq. 0)then
+       if (Mod(int(TimeRamElapsed) ,300) .eq. 0)then
           write(NameFile,'(a,a,a,i6.6,a)')&
-               PathSCEOut//"PrecipFlux_atSCBEquator_",species(IS)%s_name,"_t",nint(TimeRamElapsed/1800.),".dat"
+!               PathSCEOut//"PrecipFlux_atSCBEquator_",species(IS)%s_name,"_t",nint(TimeRamElapsed/1800.),".dat"
+                PathSCEOut//"PrecipFlux_atSCBEquator_",st,"t",nint(TimeRamElapsed/300.),".dat"   !SPR added
           open( UnitTmp_, FILE=NameFile, STATUS='replace')
-          write(UnitTmp_,*)'Time: ',TimeRamElapsed
+          write(UnitTmp_,*)'Time: ',TimeRamElapsed,'Species= ',species(IS)%s_code    !SPR added
           write(UnitTmp_,*)'nR, nMLT, nE', npsi,nzeta,nE
           write(UnitTmp_,*)'rad    angle  Energy  Flux[/cm^2/s/sr/keV] '
           do i=1, npsi
@@ -286,6 +296,39 @@ MODULE ModRamSce
           colatGrid(j,k) = 0.5*pi_d - thangle!OnIono
        END DO
     END DO
+
+
+!SPR added to write plasmapause location    
+    if(DoTest)then
+        CALL GSL_Interpolation_2D(rRawExt, aRawExt, XNE(1:nXRawExt,1:nYRaw), &
+                              rGrid(1:npsi,2:nzeta), aGrid(1:npsi,2:nzeta), XNE_EQ(1:npsi,2:nzeta), &
+                              GSLerr)
+       do k=2, nzeta
+          do i=1, npsi
+             if (XNE_EQ(i,k) .ge. 50)then
+                Lpp(k) = rGrid(i,k)
+                Lpp_colat(k) = colatGrid(i,k)
+                Lpp_lon(k) = aGrid(i,k)
+             endif
+          end do
+       end do
+       !\
+       ! write out the footprint of plasmapause on the ionosphere
+       !/
+       if (Mod(int(TimeRamElapsed) ,300) .eq. 0)then
+          write(NameFile,'(a,i6.6,a)')&
+               PathSCEOut//"Precip_Lpp_t",nint(TimeRamElapsed/300.),".dat"
+          open( UnitTmp_, FILE=NameFile, STATUS='replace')
+          write(UnitTmp_,*)'Time: ',TimeRamElapsed
+          write(UnitTmp_,*)'nZeta', nzeta-1
+          write(UnitTmp_,*)'Lpp    Lpp_colatitude'
+          do k=2, nzeta
+             write(UnitTmp_,'(f8.4,1x,f8.4)')Lpp(k), Lpp_colat(k)
+          end do
+          close(UnitTmp_)
+       end if
+    end if
+
 
     ! now interpolate the scb spatial grid into the ionospheric grids.
     ! (nR, nT) --> (colatgrid, longrid)--> (colat, lon)
@@ -385,11 +428,12 @@ MODULE ModRamSce
     ! write out the precipitation on the ionosphere                                                                                       
     !/                                                                                                                                    
     if (DoTest)then
-       if (Mod(int(TimeRamElapsed) ,1800) .eq. 0)then
+       if (Mod(int(TimeRamElapsed) ,300) .eq. 0)then
           write(NameFile,'(a,a,a,i6.6,a)')&
-               PathSCEOut//"PrecipFlux_",species(IS)%s_name,"_t",nint(TimeRamElapsed/1800.),".dat"
+!               PathSCEOut//"PrecipFlux_",species(IS)%s_name,"_t",nint(TimeRamElapsed/1800.),".dat"
+          PathSCEOut//"PrecipFlux_",st,"t",nint(TimeRamElapsed/300.),".dat"    !SPR added
           open( UnitTmp_, FILE=NameFile, STATUS='replace')
-          write(UnitTmp_,*)'Time: ',TimeRamElapsed
+          write(UnitTmp_,*)'Time: ',TimeRamElapsed, 'Species= ',species(IS)%s_code  !SPR added
           write(UnitTmp_,*)'nTheta_north, nPhi', nTheta_north, nPhi
           write(UnitTmp_,*)'Theta    Phi EnergyFlux[ergs/cm^2/s] Ave_eIono [keV] Num_Flux [/cm^2/s](Phi=0 at midnight)',&
                'discreteEnergyFlux[ergs/cm^2/s] discreteAveE[keV]'
