@@ -120,7 +120,7 @@ module ModRamIO
     use ModRamSats,      ONLY: fly_sats
     use ModRamFunctions, ONLY: ram_sum_pressure, get_ramdst
     use ModRamRestart,   ONLY: write_restart
-    use ModScbIO,        ONLY: Write_MAGxyz
+    use ModScbIO,        ONLY: Write_MAGxyz, Write_SCB_MagField_NC
     ! Share Modules
     use ModIOUnit, ONLY: UNITTMP_
 
@@ -172,6 +172,10 @@ module ModRamIO
     ! Write MAGxyz File
     if ((abs(mod(TimeIn, DtW_MAGxyz))<=1e-9).and.(NameBoundMag.ne.'DIPL')) &
        call Write_MAGxyz(NameBoundMag)
+       
+    ! Write SCB magnetic field NetCDF
+   if ((abs(mod(TimeIn, DtW_MAGxyz))<=1e-9).and.(NameBoundMag.ne.'SWMF')) &
+       call Write_SCB_MagField_NC   
 
     ! Write hI File
     if ((abs(mod(TimeIn, DtW_hI))<=1e-9).and.(NameBoundMag.ne.'DIPL')) &
