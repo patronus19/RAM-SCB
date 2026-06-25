@@ -37,7 +37,7 @@ module ModRamTiming
               DtWriteSat   = 60.0,   &  ! How often satellite files are written to (configurable in PARAM)
               DtW_Pressure = 300.0,  &
               DtW_hI       = 300.0,  &
-              DtW_EField   = 3600.0, &
+              DtW_EField   = 300.0, &
               DtW_MAGxyz   = 300.0,  &
               DtW_2DFlux   = 3600.0, &
               DtW_Losses   = 3600.0
