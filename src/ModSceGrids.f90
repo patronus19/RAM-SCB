@@ -5,7 +5,7 @@ MODULE ModSceGrids
   !\
   ! Ionosphere array parameters
   !/
-  integer, parameter :: IONO_nTheta =  91
-  integer, parameter :: IONO_nPsi   = 181
+  integer, parameter :: IONO_nTheta = 181
+  integer, parameter :: IONO_nPsi   = 361
 
 END MODULE ModSceGrids
