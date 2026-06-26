@@ -18,6 +18,8 @@ module IM_wrapper
 
   ! Coupling with IE
   public:: IM_get_for_ie
+  public:: IM_get_info_for_ie
+  public:: IM_get_for_ie_mpi
   public:: IM_put_from_ie_mpi
   public:: IM_put_from_ie
   public:: IM_put_from_ie_complete
@@ -154,6 +156,22 @@ module IM_wrapper
   end subroutine IM_set_grid
 
   !============================================================================
+   subroutine IM_get_info_for_ie(nEngIM, EngIM)
+      ! Tell IE how many energy bins are used in IM output
+      use ModRamGrids, ONLY: NE, nS
+
+      integer, intent(out) :: nEngIM
+      real, intent(out), optional :: EngIM(:, :)
+
+      !------------------------------------------------------------------------
+      nEngIM = NE
+      if (present(EngIM)) then
+         EngIM(1, :) = 1.0 ! I don't know the eng variable yet
+         EngIM(2, :) = 1.0
+      endif
+
+  end subroutine IM_get_info_for_ie
+  !============================================================================
   subroutine IM_get_for_ie(nPoint,iPointStart,Index,Weight,Buff_V,nVar)
 
     ! Provide current for IE
@@ -177,6 +195,41 @@ module IM_wrapper
 
   end subroutine IM_get_for_ie
 
+  !============================================================================
+  subroutine IM_get_for_ie_mpi(nTheta, nPhi, Buffer_IIV, &
+                                              nVarImIe, NameVarImIe_V)
+
+    use ModSceVariables, ONLY: JrIono, Energy_FluxIono, Ave_eIono
+
+    integer, intent(in) :: nTheta, nPhi, nVarImIe
+    real, intent(out) :: Buffer_IIV(nTheta, nPhi, nVarImIe)
+    character(len=3), intent(out) :: NameVarImIe_V(nVarImIe)
+
+    character(len=*), parameter :: NameSub = 'IM_get_for_ie_mpi'
+    !-------------------------------------------------------------------------
+    if(nVarImIe == 6) then
+      ! Although RAM is a north hemisphere only model, it calculates southern
+      ! hemisphere precipitation. Since BATS can do the tracing better than 
+      ! RAM, we only send the northern hemisphere values to IE and let it 
+      ! handle the southern hemisphere. 
+      Buffer_IIV(:,:,1) = Energy_FluxIono(1:nTheta, :) ! RAM diffuse electron eflux
+      Buffer_IIV(:,:,2) = Ave_eIono(1:nTheta, :) ! RAM diffuse electron average energy
+      Buffer_IIV(:,:,3) = 0.0 ! RAM diffuse proton flux not yet implemented.
+      Buffer_IIV(:,:,4) = 0.0 ! RAM diffuse proton average energy nyi.
+      Buffer_IIV(:,:,5) = JrIono(1:nTheta, :) ! RAM FAC Var
+      Buffer_IIV(:,:,6) = 0.0 ! Unsure how to use RAM boundary right now
+      
+      NameVarImIe_V(1) = 'eef'
+      NameVarImIe_V(2) = 'eae'
+      NameVarImIe_V(3) = 'hef'
+      NameVarImIe_V(4) = 'hae'
+      NameVarImIe_V(5) = 'fac'
+      NameVarImIe_V(6) = 'bnd'
+    else 
+       call CON_stop('RAM_SCB:'//NameSub//' can only use nVarImIe=6')
+    end if
+   
+  end subroutine IM_get_for_ie_mpi
   !============================================================================
   subroutine IM_put_from_ie_mpi(nTheta, nPhi, Potential_II)
 
