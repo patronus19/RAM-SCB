@@ -40,7 +40,8 @@ module ModRamTiming
               DtW_EField   = 300.0, &
               DtW_MAGxyz   = 300.0,  &
               DtW_2DFlux   = 3600.0, &
-              DtW_Losses   = 3600.0
+              DtW_Losses   = 3600.0, &
+              Dt_SWMF      = 5.0 ! How often the ionospheric precipitation is gathered for SWMF
   real(DP) :: T, UTs
   real(DP) :: Efficiency = 0.0, SysTimeStart, SysTimeNow
   real(DP) :: dtPrintTiming = 300.0

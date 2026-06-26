@@ -107,7 +107,6 @@ MODULE ModRamSce
     F(2:NR,1:nT-1,2:NE,2:NPA) = FLUX(IS,2:NR,1:NT-1,2:NE,2:NPA)
     F(2:NR,nT,2:NE,2:NPA) = F(2:NR,1,2:NE,2:NPA)
     F(2:NR,:,2:NE,1)      = F(2:NR,:,2:NE,2)
-
     ! calculate the averaged flux at the equator for the precipitation flux (Jordanova 1997).
     ! averaged over the pitch angle (in the loss cone), so to remove the angle dependence.
     ! then for the low altitude flux, it has no pitch angle dependence (i.e., isotropic now).
@@ -125,7 +124,6 @@ MODULE ModRamSce
        end do
     end do
     
-    	
     if (IS.eq.1) st = 'h_'   !SPR added
     if (IS.eq.2) st = 'he'
     if (IS.eq.3) st = 'o_'
@@ -158,7 +156,6 @@ MODULE ModRamSce
        PParEExt(i,:) = PParEExt(i-1,:)
     end do
     where(ave_fluxExt .le. 1.0e-31) ave_fluxExt = 1.0e-31
-
     ! SCB Grid
     DO k = 2, nzeta
        DO j = 1, npsi
@@ -281,7 +278,6 @@ MODULE ModRamSce
           close(UnitTmp_)
        end if    
     end if
-
     ! the longitude is the same as in angleGrid (index start from the noon, 0 degree at midnight)
     lonGrid(:,2:nzeta) = aGrid(:,2:nzeta)
 
@@ -296,10 +292,8 @@ MODULE ModRamSce
           colatGrid(j,k) = 0.5*pi_d - thangle!OnIono
        END DO
     END DO
-
-
 !SPR added to write plasmapause location    
-    if(DoTest)then
+    if(DoTest .and. .false.)then
         CALL GSL_Interpolation_2D(rRawExt, aRawExt, XNE(1:nXRawExt,1:nYRaw), &
                               rGrid(1:npsi,2:nzeta), aGrid(1:npsi,2:nzeta), XNE_EQ(1:npsi,2:nzeta), &
                               GSLerr)
@@ -328,7 +322,6 @@ MODULE ModRamSce
           close(UnitTmp_)
        end if
     end if
-
 
     ! now interpolate the scb spatial grid into the ionospheric grids.
     ! (nR, nT) --> (colatgrid, longrid)--> (colat, lon)

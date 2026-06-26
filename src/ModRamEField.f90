@@ -169,6 +169,7 @@ SUBROUTINE ionospheric_potential
   !!!! Module Subroutine/Functions
   use ModRamGSL,    ONLY: GSL_Interpolation_2D, GSL_Derivs
   use ModRamFunctions, ONLY: RamFileName
+  use ModRamSce, ONLY: calculate_precip_flux_jr
   use ModScbIO,     ONLY: Write_Ionospheric_Potential
   use ModSceRun,    ONLY: sce_run
   !!!! Share Modules
@@ -185,7 +186,7 @@ SUBROUTINE ionospheric_potential
   integer :: doy, GSLerr, i, j, k, ierr, iYear_l, &
              iDoy_l, iHour_l, iMin_l, iLines, isec_l, imsec_l, imonth_l, iday_l, &
              AL_l, SymH_l, sgn
-  integer :: iError
+  integer :: iError, iS, S
   REAL(DP) :: radius, angle, bzimf_l, bndylat, byimf_l, pdyn_l, Nk_l, &
               Vk_l, bTot_l, bximf_l, vx_l, vy_l, vz_l, t_l, AVS, VT
   REAL(DP), ALLOCATABLE :: colat(:), lon(:), phiIonoRaw(:,:), dPhiIonodRho(:,:), &
@@ -194,6 +195,8 @@ SUBROUTINE ionospheric_potential
   CHARACTER(LEN = 100) :: header
   CHARACTER(LEN = 100) :: line
   LOGICAL :: UseAL
+  real(DP) :: rIonosphere
+
 
   !================================================================================================
   ALLOCATE(dPhiIonodRho(npsi, nzeta+1), dPhiIonodZeta(npsi, nzeta+1), &
@@ -402,6 +405,46 @@ SUBROUTINE ionospheric_potential
   RETURN
 
 END SUBROUTINE ionospheric_potential
+
+!============================================================================
+
+SUBROUTINE gather_ionospheric_precipitation
+  ! This subroutine gathers the ionospheric precipitation from RAM and sends it to SWMF
+
+    use ModSceVariables, ONLY: JrIono, Energy_FluxIono, Ave_eIono, Num_FluxIono,&
+                             Dis_Energy_FluxIono, Dis_Ave_eIono, &
+                             HighLatBoundaryIM, Diff_FluxIono,HighLatBoundary, &
+                             IONO_NORTH_Phi, IONO_NORTH_JR, PhiIono_Weimer
+    use ModRamGrids,     ONLY: nS
+    use ModRamVariables, ONLY: species
+    use nrtype, ONLY: cRadToDeg
+    use ModSceGrids,     ONLY: Iono_nTheta, Iono_nPsi
+    use ModRamSce, ONLY: calculate_precip_flux_jr
+
+    real :: rIonosphere
+    integer :: IS, S, i
+
+   do IS=1,nS
+      if (species(IS)%s_name .eq. 'Electron')then ! only the electron precipitation is used for SCE calculation
+         S=IS
+         exit
+      end if
+   end do
+
+   rIonosphere = 1.0+0.0172
+
+   ! Gather precipitation to hand back to IE
+   call calculate_precip_flux_jr(S, 2*Iono_nTheta-1, Iono_nPsi, rIonosphere, &
+         Energy_FluxIono, Ave_eIono, Num_FluxIono, &
+         Dis_Energy_FluxIono, Dis_Ave_eIono, &
+         JrIono, HighLatBoundaryIM, Diff_FluxIono) ! only for electrons
+
+   JrIono              = JrIono*1.0e-6               ! convert mA/m^2 to A/m^2 
+   Energy_FluxIono     = Energy_FluxIono*1.6e-9      ! convert keV/(cm^2s) to ergs/(cm^2s)
+   Ave_eIono           = Ave_eIono                   ! keV
+   HighLatBoundary     = HighLatBoundaryIM*cRadToDeg
+
+END SUBROUTINE gather_ionospheric_precipitation
 
 !============================================================================
 

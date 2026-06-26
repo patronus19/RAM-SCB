@@ -91,7 +91,7 @@ module ModRamIndices
       end if
     elseif (dateIndex.gt.0) then
       ! Fast forward to current position.
-      write(StringFmt, "('(',i10,'(/)a)')") dateIndex
+      write(StringFmt, "('(',i10,'(/),a)')") dateIndex
       read(UNITTMP_, trim(StringFmt)) StringLine
       if (DoTest) then
         write(*,'(a, i4, 2("-",i2.2),1x, i2.2,2(":",i2.2))') 'Start Time = ', &

@@ -11,7 +11,7 @@ MODULE ModRamScbRun
                                verbose, reset, DoUseRam, SCBonRAMTime, RAMTie
     use ModRamTiming,    ONLY: DtsFramework, DtsMax, DtsMin, DtsNext, Dts, Dt_hI, &
                                TimeRamStart, TimeRamNow, TimeMax, TimeRamElapsed, &
-                               UTs, Dt_bc, DtEfi
+                               UTs, Dt_bc, DtEfi, Dt_SWMF
     use ModRamVariables, ONLY: Kp, dBdt, dIdt, dIbndt
     use ModScbVariables, ONLY: hICalc, SORFail
     use ModScbParams,    ONLY: method
@@ -26,7 +26,7 @@ MODULE ModRamScbRun
     use ModRamInit,      ONLY: ram_allocate, ram_init, init_input, ram_deallocate
     use ModRamRun,       ONLY: ram_run
     use ModRamBoundary,  ONLY: get_boundary_flux
-    use ModRamEField,    ONLY: get_electric_field
+    use ModRamEField,    ONLY: get_electric_field, gather_ionospheric_precipitation
     use ModScbInit,      ONLY: scb_allocate, scb_init, scb_deallocate
     use ModScbRun,       ONLY: scb_run
     use ModScbIO,        ONLY: computational_domain
@@ -74,6 +74,12 @@ MODULE ModRamScbRun
     if (abs(mod(TimeRamElapsed, DtEfi)).le.1e-9) then
        call get_electric_field
     end if
+
+    ! Gather ionospheric precipitation
+    if (abs(mod(TimeRamElapsed, Dt_SWMF)).le.1e-9) then
+       call gather_ionospheric_precipitation
+    end if
+
 !!!!!!!
 
 !!!!!!!! RUN RAM
